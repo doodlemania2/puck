@@ -1,52 +1,26 @@
-# This workflow will run all checks required for a PR to be merged.
-
+# Fork CI. Runs on the doodle branch and on pull requests into it.
 name: Build and Test ci
 
 on:
   push:
-    branches: [main]
+    branches: [doodle]
   pull_request:
-    branches: [main]
+    branches: [doodle]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-
+    # Never a GitHub-hosted runner, and never for Dependabot.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ${{ vars.RUNNER_HEAVY || 'tdp-linux' }}
+    timeout-minutes: 30
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7.0.1
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Check linting and formatting
-        run: |
-          if pnpm lint && pnpm format:check; then
-            echo "Linting and formatting checks passed."
-          else
-            echo "Linting or formatting checks failed. Please fix the issues."
-            exit 1
-          fi
-
-      - name: Build everything
-        run: |
-          pnpm build
-
-      - name: Check for build failures
-        run: |
-          if [ $? -ne 0 ]; then
-            echo "Build failed. Please fix the issues."
-            exit 1
-          fi
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm lint && pnpm format:check
+      - run: pnpm build

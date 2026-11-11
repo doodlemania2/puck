@@ -1,0 +1,35 @@
+name: Check upstream
+
+# Opens one issue when puckeditor/puck main is ahead of the doodle branch.
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ${{ vars.RUNNER_LIGHT || 'tdp-linux' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: doodle
+          fetch-depth: 0
+      - name: Compare with upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git remote add upstream https://github.com/puckeditor/puck.git
+          git fetch --quiet upstream main
+          BEHIND=$(git rev-list --count HEAD..upstream/main)
+          LATEST=$(git ls-remote --tags --refs upstream | awk '{sub("refs/tags/","",$2); print $2}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "doodle is $BEHIND commits behind upstream main. Latest upstream tag: $LATEST"
+          [ "$BEHIND" -eq 0 ] && exit 0
+          TITLE="Sync with upstream Puck ($BEHIND commits behind, latest tag $LATEST)"
+          OPEN=$(gh issue list --state open --search "Sync with upstream Puck in:title" --json number --jq 'length')
+          [ "$OPEN" -gt 0 ] && exit 0
+          gh issue create --title "$TITLE" --body "Follow FORK_SYNC.md. Merge upstream/main into main, then rebase doodle."
