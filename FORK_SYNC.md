@@ -24,4 +24,9 @@ Synced to: upstream v0.24.0
 - Release: tag `vX.Y.Z` on `doodle`. A manual run of the workflow is a dry run.
 
 ## Patches carried
-None yet. List every patch here with its reason, so a rebase conflict is easy to judge.
+List every patch here with its reason, so a rebase conflict is easy to judge.
+
+1. `RichTextRenderFallback` (`packages/core/components/RichTextEditor/components/RenderFallback.tsx`):
+   shows plain text only. Upstream injected the raw string with `dangerouslySetInnerHTML`, so a
+   stored `<script>`, `javascript:` link or `onerror` handler reached server-rendered output.
+   Test: `components/RichTextEditor/__tests__/render-fallback.spec.tsx`.
