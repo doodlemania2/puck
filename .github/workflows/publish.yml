@@ -14,7 +14,8 @@ permissions:
 
 jobs:
   publish:
-    runs-on: ${{ vars.RUNNER_HEAVY || 'tdp-linux' }}
+    # Public repo, and npm provenance needs a GitHub-hosted runner.
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
