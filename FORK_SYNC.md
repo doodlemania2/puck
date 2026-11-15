@@ -22,6 +22,12 @@ Synced to: upstream v0.24.0
 - Consumers install it with an alias, so import paths do not change:
   `"@puckeditor/core": "npm:@doodlemania/puck@^0.24.0"`
 - Release: tag `vX.Y.Z` on `doodle`. A manual run of the workflow is a dry run.
+- Secret: the workflow reads the GitHub Actions secret `NPM_TOKEN` (an npm automation token for the
+  `@doodlemania` scope). The value is also in OpenBao. Never put it in a file.
+- Pre-release policy: a tag with a hyphen, such as `v0.25.0-doodle.1`, publishes under the `next`
+  dist-tag. `latest` moves only on a plain `vX.Y.Z` tag. Consumers pin the exact version.
+- Sync: the `Sync upstream` workflow runs each Monday. It opens a pull request that merges the latest
+  upstream release tag into `doodle`. On a conflict it opens an issue.
 
 ## Patches carried
 List every patch here with its reason, so a rebase conflict is easy to judge.
