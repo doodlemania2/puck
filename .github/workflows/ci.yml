@@ -9,9 +9,10 @@ on:
 
 jobs:
   build-and-test:
-    # Never a GitHub-hosted runner, and never for Dependabot.
+    # Public repo: a standard hosted runner, never a self-hosted one (fork PRs run untrusted code).
+    # Never for Dependabot.
     if: github.event.pull_request.user.login != 'dependabot[bot]'
-    runs-on: ${{ vars.RUNNER_HEAVY || 'tdp-linux' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0

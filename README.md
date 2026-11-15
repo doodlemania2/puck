@@ -1,3 +1,5 @@
+> **Fork notice.** This is `@doodlemania/puck`, a fork of [Puck](https://github.com/puckeditor/puck) (MIT). It is not affiliated with Puck Editor. See [NOTICE](NOTICE) for the fork point and [FORK_SYNC.md](FORK_SYNC.md) for the patches.
+
 <br /><br /><br />
 
 <div align="center">

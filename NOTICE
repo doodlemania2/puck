@@ -1,0 +1,19 @@
+@doodlemania/puck is a fork of Puck (https://github.com/puckeditor/puck).
+
+Upstream project: Puck, by Puck Editor. Licensed under the MIT License.
+Fork point:       upstream v0.24.0, commit d05542f4ddc3ade0275860cb91756dadd7ea791a
+                  (upstream main at the time of the fork).
+
+The LICENSE file keeps the upstream copyright notice without change.
+"Puck" and the Puck logo are not covered by the MIT License. This fork
+publishes under another name for that reason.
+
+What this fork publishes:
+  - Only packages/core, as @doodlemania/puck.
+
+What this fork does not publish:
+  - Puck Cloud and Puck AI packages (@puckeditor/cloud-client,
+    @puckeditor/plugin-ai, @puckeditor/plugin-auth). The demo app and the
+    "-ai" recipes use them. No published package depends on them.
+
+Our changes are listed in FORK_SYNC.md under "Patches carried".
