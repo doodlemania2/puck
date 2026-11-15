@@ -1,0 +1,55 @@
+name: Sync upstream
+
+# Opens one pull request into doodle that merges the latest upstream release tag.
+# On a merge conflict it opens one issue instead. Steps are in FORK_SYNC.md.
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: doodle
+          fetch-depth: 0
+      - name: Merge the latest upstream release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git remote add upstream https://github.com/puckeditor/puck.git
+          git fetch --quiet --tags upstream
+          TAG=$(git ls-remote --tags --refs upstream | awk '{sub("refs/tags/","",$2); print $2}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "Latest upstream release: $TAG"
+          if git merge-base --is-ancestor "refs/tags/$TAG" HEAD; then
+            echo "doodle already contains $TAG."
+            exit 0
+          fi
+          BRANCH="sync/upstream-$TAG"
+          if [ -n "$(gh pr list --state open --head "$BRANCH" --json number --jq '.[].number')" ]; then
+            echo "A pull request for $TAG is already open."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          if git merge --no-ff -m "chore: merge upstream $TAG" "refs/tags/$TAG"; then
+            git push origin "$BRANCH"
+            gh pr create --base doodle --head "$BRANCH" \
+              --title "Sync with upstream Puck $TAG" \
+              --body "Merges upstream $TAG into doodle. Follow FORK_SYNC.md: check that every patch under 'Patches carried' still applies, then update the 'Synced to' line."
+          else
+            git merge --abort
+            OPEN=$(gh issue list --state open --search "Upstream sync conflict in:title" --json number --jq 'length')
+            [ "$OPEN" -gt 0 ] && exit 0
+            gh issue create --title "Upstream sync conflict with $TAG" \
+              --body "The merge of upstream $TAG conflicts with doodle. Merge by hand. Follow FORK_SYNC.md."
+          fi
